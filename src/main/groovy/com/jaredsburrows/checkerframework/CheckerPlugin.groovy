@@ -17,17 +17,17 @@ final class CheckerPlugin implements Plugin<Project> {
     "com.android.library",
     "com.android.test"]
   // Checker Framework configurations and dependencies
-  private final static def LIBRARY_VERSION = "2.4.0"
+  private final static def LIBRARY_VERSION = "2.7.0"
   private final static def ANNOTATED_JDK_NAME_JDK7 = "jdk7"
   private final static def ANNOTATED_JDK_NAME_JDK8 = "jdk8"
   private final static def ANNOTATED_JDK_CONFIGURATION = "checkerFrameworkAnnotatedJDK"
   private final static def ANNOTATED_JDK_CONFIGURATION_DESCRIPTION = "A copy of JDK classes with Checker Framework type qualifiers inserted."
-  private final static def JAVAC_CONFIGURATION = "checkerFrameworkJavac"
+//  private final static def JAVAC_CONFIGURATION = "checkerFrameworkJavac"
   private final static def JAVAC_CONFIGURATION_DESCRIPTION = "A customization of the OpenJDK javac compiler with additional support for type annotations."
   private final static def CONFIGURATION = "checkerFramework"
   private final static def CONFIGURATION_DESCRIPTION = "The Checker Framework: custom pluggable types for Java."
   private final static def JAVA_COMPILE_CONFIGURATION = "compile"
-  private final static def COMPILER_DEPENDENCY = "org.checkerframework:compiler:${LIBRARY_VERSION}"
+//  private final static def COMPILER_DEPENDENCY = "org.checkerframework:compiler:${LIBRARY_VERSION}"
   private final static def CHECKER_DEPENDENCY = "org.checkerframework:checker:${LIBRARY_VERSION}"
   private final static def CHECKER_QUAL_DEPENDENCY = "org.checkerframework:checker-qual:${LIBRARY_VERSION}"
 
@@ -60,13 +60,15 @@ final class CheckerPlugin implements Plugin<Project> {
     } else if (javaVersion.java8) {
       jdkVersion = ANNOTATED_JDK_NAME_JDK8
     } else {
-      throw new IllegalStateException("Checker plugin only supports Java 7 and Java 8 projects.")
+      //assume jdk8
+      jdkVersion = ANNOTATED_JDK_NAME_JDK8
+//      throw new IllegalStateException("Checker plugin only supports Java 7 and Java 8 projects. Current version: " + javaVersion)
     }
 
     // Create a map of the correct configurations with dependencies
     def dependencyMap = [
       [name: "${ANNOTATED_JDK_CONFIGURATION}", descripion: "${ANNOTATED_JDK_CONFIGURATION_DESCRIPTION}"]: "org.checkerframework:${jdkVersion}:${LIBRARY_VERSION}",
-      [name: "${JAVAC_CONFIGURATION}", descripion: "${JAVAC_CONFIGURATION_DESCRIPTION}"]                : "${COMPILER_DEPENDENCY}",
+//      [name: "${JAVAC_CONFIGURATION}", descripion: "${JAVAC_CONFIGURATION_DESCRIPTION}"]                : "${COMPILER_DEPENDENCY}",
       [name: "${CONFIGURATION}", descripion: "${ANNOTATED_JDK_CONFIGURATION_DESCRIPTION}"]              : "${CHECKER_DEPENDENCY}",
       [name: "${JAVA_COMPILE_CONFIGURATION}", descripion: "${CONFIGURATION_DESCRIPTION}"]               : "${CHECKER_QUAL_DEPENDENCY}"
     ]
