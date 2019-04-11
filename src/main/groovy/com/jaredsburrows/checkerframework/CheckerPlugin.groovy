@@ -92,24 +92,26 @@ final class CheckerPlugin implements Plugin<Project> {
     // Apply checker to project
     project.gradle.projectsEvaluated {
       project.tasks.withType(AbstractCompile).all { compile ->
-        compile.options.annotationProcessorPath = project.configurations.checkerFramework
-        compile.options.compilerArgs = [
-          "-Xbootclasspath/p:${project.configurations.checkerFrameworkAnnotatedJDK.asPath}".toString()
-        ]
-        if (!userConfig.checkers.empty) {
-          compile.options.compilerArgs << "-processor" << userConfig.checkers.join(",")
-        }
+        if (compile.hasProperty('options') && (!userConfig.excludeTests || !compile.name.toLowerCase().contains("test"))) {
+          compile.options.annotationProcessorPath = project.configurations.checkerFramework
+          compile.options.compilerArgs = [
+            "-Xbootclasspath/p:${project.configurations.checkerFrameworkAnnotatedJDK.asPath}".toString()
+          ]
+          if (!userConfig.checkers.empty) {
+            compile.options.compilerArgs << "-processor" << userConfig.checkers.join(",")
+          }
 
-      userConfig.extraJavacArgs.forEach({option -> compile.options.compilerArgs << option})
+        userConfig.extraJavacArgs.forEach({option -> compile.options.compilerArgs << option})
 
-      ANDROID_IDS.each { id ->
+        ANDROID_IDS.each { id ->
           project.plugins.withId(id) {
             options.bootClasspath = System.getProperty("sun.boot.class.path") + ":" + options.bootClasspath
-            options.bootClasspath = "${project.configurations.checkerFrameworkJavac.asPath}:".toString() + ":" + options.bootClasspath
+//            options.bootClasspath = "${project.configurations.checkerFrameworkJavac.asPath}:".toString() + ":" + options.bootClasspath
+            }
           }
-        }
         options.fork = true
         //        options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${project.configurations.checkerFrameworkJavac.asPath}"]
+        }
       }
     }
   }

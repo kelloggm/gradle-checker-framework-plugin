@@ -5,4 +5,6 @@ class CheckerExtension {
 
   // A list of extra options to pass directly to javac when running typecheckers
   List<String> extraJavacArgs = []
+
+  Boolean excludeTests = false
 }
