@@ -1,12 +1,16 @@
 # Gradle Checker Framework Plugin
 
 [![License](https://img.shields.io/badge/license-apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
-[![Build Status](https://travis-ci.org/jaredsburrows/gradle-checker-framework-plugin.svg?branch=master)](https://travis-ci.org/jaredsburrows/gradle-checker-framework-plugin)
+[![Build Status](https://travis-ci.org/kelloggm/gradle-checker-framework-plugin.svg?branch=master)](https://travis-ci.org/jaredsburrows/gradle-checker-framework-plugin)
 [![Twitter Follow](https://img.shields.io/twitter/follow/jaredsburrows.svg?style=social)](https://twitter.com/jaredsburrows)
 
 This plugin configures `JavaCompile` tasks to use the [Checker Framework](https://checkerframework.org).
+It is a fork of the original plugin built by [jaredsburrows](https://github.com/jaredsburrows/gradle-checker-framework-plugin).
 
 ## Download
+
+NOTE: these instructions apply to the original plugin. To use this version, you must [build
+the plugin from source](#using-a-locally-built-plugin) (for now).
 
 **Release:**
 ```groovy
@@ -40,7 +44,33 @@ apply plugin: 'com.jaredsburrows.checkerframework'
 ```
 Snapshot versions are available in the [JFrog Artifactory repository](https://oss.jfrog.org/artifactory/libs-snapshot/).
 
+## Using a locally-built plugin
+
+To build the plugin from source, run `./gradlew build`.
+
+If you want to use a locally-built version of the plugin, you can publish the plugin to your
+local Maven repository by running `./gradlew publish`. In the `build.gradle` file for each
+project for which you want to use the locally-built plugin, make sure that `mavenLocal()`
+is the first entry in the `repositories` block within the `buildscript` block. A full example
+will look like this:
+
+```groovy
+buildscript {
+  repositories {
+    mavenLocal()
+  }
+  
+  dependencies {
+    classpath 'com.jaredsburrows:gradle-checker-framework-plugin:0.2.3-SNAPSHOT'
+  }
+}
+
+apply plugin: 'com.jaredsburrows.checkerframework'
+```
+
 ## Configuration
+
+### Configuring which checkers to use
 
 It is possible to configure the checkers you want to enable using the `checkerFramework.checkers` property.
 
@@ -58,6 +88,50 @@ checkerFramework {
 By default, only the `NullnessChecker` is enabled.
 
 You can find out what checkers are available in the [Checker Framework Manual](https://checkerframework.org/manual/#introduction).
+
+### Providing checker-specific options to the compiler
+
+You can set the `checkerFramework.extraJavacArgs` property in order to pass additional options to the compiler when running
+a typechecker.
+
+For example, to use a stub file:
+
+```groovy
+checkerFramework {
+  extraJavacArgs = [
+    '-Astubs=/path/to/my/stub/file.astub'
+  ]
+}
+```
+
+### Configuring third-party checkers
+
+To use a third-party typechecker (i.e. one that is not distributed with the Checker Framework),
+add a dependency to the `checkerFramework` dependency configuration.
+
+For example, to use the [Glacier](http://mcoblenz.github.io/Glacier/) immutability checker:
+
+```groovy
+dependencies {
+  ...
+  checkerFramework 'edu.cmu.cs.glacier:glacier:0.1'
+}
+```
+
+### Other options
+
+By default, the plugin applies the selected checkers to all `JavaCompile` targets.
+The plugin includes a rudimentary option for preventing checkers from being applied
+to test targets. To use it, add the following to the `checkerFramework` block:
+
+```groovy
+checkerFramework {
+  excludeTests = true
+}
+```
+
+The check for test targets is entirely syntactic: this option will not apply the checkers
+to any task whose name includes "test", ignoring case. The default value is `false`.
 
 ## License
 

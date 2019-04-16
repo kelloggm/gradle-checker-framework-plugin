@@ -17,17 +17,13 @@ final class CheckerPlugin implements Plugin<Project> {
     "com.android.library",
     "com.android.test"]
   // Checker Framework configurations and dependencies
-  private final static def LIBRARY_VERSION = "2.4.0"
-  private final static def ANNOTATED_JDK_NAME_JDK7 = "jdk7"
+  private final static def LIBRARY_VERSION = "2.8.0"
   private final static def ANNOTATED_JDK_NAME_JDK8 = "jdk8"
   private final static def ANNOTATED_JDK_CONFIGURATION = "checkerFrameworkAnnotatedJDK"
   private final static def ANNOTATED_JDK_CONFIGURATION_DESCRIPTION = "A copy of JDK classes with Checker Framework type qualifiers inserted."
-  private final static def JAVAC_CONFIGURATION = "checkerFrameworkJavac"
-  private final static def JAVAC_CONFIGURATION_DESCRIPTION = "A customization of the OpenJDK javac compiler with additional support for type annotations."
   private final static def CONFIGURATION = "checkerFramework"
   private final static def CONFIGURATION_DESCRIPTION = "The Checker Framework: custom pluggable types for Java."
   private final static def JAVA_COMPILE_CONFIGURATION = "compile"
-  private final static def COMPILER_DEPENDENCY = "org.checkerframework:compiler:${LIBRARY_VERSION}"
   private final static def CHECKER_DEPENDENCY = "org.checkerframework:checker:${LIBRARY_VERSION}"
   private final static def CHECKER_QUAL_DEPENDENCY = "org.checkerframework:checker-qual:${LIBRARY_VERSION}"
 
@@ -35,37 +31,40 @@ final class CheckerPlugin implements Plugin<Project> {
 
   @Override void apply(Project project) {
     CheckerExtension userConfig = project.extensions.create("checkerFramework", CheckerExtension)
-
-    project.gradle.projectsEvaluated {
-      AppliedPlugin prereq = (ANDROID_IDS + "java").findResult(project.pluginManager.&findPlugin)
-      if (!prereq) LOG.warn('No android or java plugins found, checker compiler options will not be applied.')
-      else {
-        LOG.info('Found plugin {}, applying checker compiler options.', prereq.id)
+    boolean applied = false
+    (ANDROID_IDS + "java").each { id ->
+      project.pluginManager.withPlugin(id) {
+        LOG.info('Found plugin {}, applying checker compiler options.', id)
         configureProject(project, userConfig)
+        if (!applied) applied = true
       }
+    }
+    project.gradle.projectsEvaluated {
+      if (!applied) LOG.warn('No android or java plugins found, checker compiler options will not be applied.')
     }
   }
 
   private static configureProject(Project project, CheckerExtension userConfig) {
     JavaVersion javaVersion =
         project.extensions.findByName('android')?.compileOptions?.sourceCompatibility ?:
-        project.convention.findByName('jdk')?.sourceCompatibility ?:
-        JavaVersion.current()
+        project.property('sourceCompatibility')
 
-    // Check for Java 7 or Java 8 to make sure to get correct annotations dependency
+    // Check Java version: reject Java 7 because we can't load the typetools compiler without breaking some
+    // Java 8 projects.
     def jdkVersion
-    if (javaVersion.java7) {
-      jdkVersion = ANNOTATED_JDK_NAME_JDK7
-    } else if (javaVersion.java8) {
+    if (javaVersion.java8) {
       jdkVersion = ANNOTATED_JDK_NAME_JDK8
-    } else {
-      throw new IllegalStateException("Checker plugin only supports Java 7 and Java 8 projects.")
+    } else if (javaVersion.java7) {
+      throw new IllegalStateException("The Checker Framework no longer supports Java 7 JDKs. You can use an older" +
+        "version of the framework (and of the Gradle plugin), but we recommend upgrading to a Java 8 JDK.")
+    }  else {
+      // assume jdk8 until newer JDKs are released
+      jdkVersion = ANNOTATED_JDK_NAME_JDK8
     }
 
     // Create a map of the correct configurations with dependencies
     def dependencyMap = [
       [name: "${ANNOTATED_JDK_CONFIGURATION}", descripion: "${ANNOTATED_JDK_CONFIGURATION_DESCRIPTION}"]: "org.checkerframework:${jdkVersion}:${LIBRARY_VERSION}",
-      [name: "${JAVAC_CONFIGURATION}", descripion: "${JAVAC_CONFIGURATION_DESCRIPTION}"]                : "${COMPILER_DEPENDENCY}",
       [name: "${CONFIGURATION}", descripion: "${ANNOTATED_JDK_CONFIGURATION_DESCRIPTION}"]              : "${CHECKER_DEPENDENCY}",
       [name: "${JAVA_COMPILE_CONFIGURATION}", descripion: "${CONFIGURATION_DESCRIPTION}"]               : "${CHECKER_QUAL_DEPENDENCY}"
     ]
@@ -89,23 +88,27 @@ final class CheckerPlugin implements Plugin<Project> {
     }
 
     // Apply checker to project
-    project.tasks.withType(AbstractCompile).all { compile ->
-      compile.options.annotationProcessorPath = project.configurations.checkerFramework
-      compile.options.compilerArgs = [
-        "-Xbootclasspath/p:${project.configurations.checkerFrameworkAnnotatedJDK.asPath}".toString()
-      ]
-      if (!userConfig.checkers.empty) {
-        compile.options.compilerArgs << "-processor" << userConfig.checkers.join(",")
-      }
+    project.gradle.projectsEvaluated {
+      project.tasks.withType(AbstractCompile).all { compile ->
+        if (compile.hasProperty('options') && (!userConfig.excludeTests || !compile.name.toLowerCase().contains("test"))) {
+          compile.options.annotationProcessorPath = project.configurations.checkerFramework
+          compile.options.compilerArgs = [
+            "-Xbootclasspath/p:${project.configurations.checkerFrameworkAnnotatedJDK.asPath}".toString()
+          ]
+          if (!userConfig.checkers.empty) {
+            compile.options.compilerArgs << "-processor" << userConfig.checkers.join(",")
+          }
 
-      ANDROID_IDS.each { id ->
-        project.plugins.withId(id) {
-          options.bootClasspath = System.getProperty("sun.boot.class.path") + ":" + options.bootClasspath
-          options.bootClasspath = "${project.configurations.checkerFrameworkJavac.asPath}:".toString() + ":" + options.bootClasspath
+        userConfig.extraJavacArgs.forEach({option -> compile.options.compilerArgs << option})
+
+        ANDROID_IDS.each { id ->
+          project.plugins.withId(id) {
+            options.bootClasspath = System.getProperty("sun.boot.class.path") + ":" + options.bootClasspath
+            }
+          }
+        options.fork = true
         }
       }
-      options.fork = true
-      //        options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${project.configurations.checkerFrameworkJavac.asPath}"]
     }
   }
 }
