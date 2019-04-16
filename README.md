@@ -118,6 +118,21 @@ dependencies {
 }
 ```
 
+### Other options
+
+By default, the plugin applies the selected checkers to all `JavaCompile` targets.
+The plugin includes a rudimentary option for preventing checkers from being applied
+to test targets. To use it, add the following to the `checkerFramework` block:
+
+```groovy
+checkerFramework {
+  excludeTests = true
+}
+```
+
+The check for test targets is entirely syntactic: this option will not apply the checkers
+to any task whose name includes "test", ignoring case. The default value is `false`.
+
 ## License
 
     Copyright (C) 2017 Jared Burrows
