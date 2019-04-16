@@ -118,6 +118,33 @@ dependencies {
 }
 ```
 
+### Specifying a Checker Framework version
+
+To change the version of the Checker Framework used by the plugin, you can add
+`checkerFramework` entries to your `dependencies` block. For example, if you
+needed to use version 2.7.0 of the Checker Framework:
+
+```groovy
+dependencies {
+  checkerFramework 'org.checkerframework:checker-qual:2.7.0'
+  checkerFramework 'org.checkerframework:checker:2.7.0'
+  checkerFramework 'org.checkerframework:jdk8:2.7.0'
+}
+```
+
+You can also use a locally-built version of the Checker Framework via this
+mechanism:
+
+```groovy
+cfHome = String.valueOf(System.getenv("CHECKERFRAMEWORK"))
+
+dependencies {
+  checkerFramework files(cfHome + "/checker/dist/checker.jar")
+  checkerFramework files(cfHome + "/checker/dist/checker-qual.jar")
+  checkerFramework files(cfHome + "/checker/dist/jdk8.jar")
+}
+```
+
 ### Other options
 
 By default, the plugin applies the selected checkers to all `JavaCompile` targets.
