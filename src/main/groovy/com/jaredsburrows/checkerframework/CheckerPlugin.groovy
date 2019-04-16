@@ -17,8 +17,7 @@ final class CheckerPlugin implements Plugin<Project> {
     "com.android.library",
     "com.android.test"]
   // Checker Framework configurations and dependencies
-  private final static def LIBRARY_VERSION = "2.7.0"
-  private final static def ANNOTATED_JDK_NAME_JDK7 = "jdk7"
+  private final static def LIBRARY_VERSION = "2.8.0"
   private final static def ANNOTATED_JDK_NAME_JDK8 = "jdk8"
   private final static def ANNOTATED_JDK_CONFIGURATION = "checkerFrameworkAnnotatedJDK"
   private final static def ANNOTATED_JDK_CONFIGURATION_DESCRIPTION = "A copy of JDK classes with Checker Framework type qualifiers inserted."
