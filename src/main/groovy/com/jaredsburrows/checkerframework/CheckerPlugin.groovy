@@ -51,13 +51,13 @@ final class CheckerPlugin implements Plugin<Project> {
 
     // Check Java version.
     def jdkVersion
-    if (javaVersion.java8) {
-      jdkVersion = ANNOTATED_JDK_NAME_JDK8
-    } else if (javaVersion.java7) {
+    if (javaVersion.java7) {
       throw new IllegalStateException("The Checker Framework does not support Java 7.")
+    } else if (javaVersion.java8) {
+      jdkVersion = ANNOTATED_JDK_NAME_JDK8
     } else {
       // Use Java 8, even if the user requested a newer version of Java.
-      // Undo this hack when newer JDKs are released by the Checker Framework team.
+      // Undo this hack when newer annotated JDKs are released by the Checker Framework team.
       jdkVersion = ANNOTATED_JDK_NAME_JDK8
     }
 
