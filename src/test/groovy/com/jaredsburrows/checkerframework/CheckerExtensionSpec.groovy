@@ -55,7 +55,7 @@ final class CheckerExtensionSpec extends Specification {
     buildFile = testProjectDir.newFile("build.gradle")
   }
 
-  def "Project without configuration uses the nullness checker"() {
+  def "Project without configuration uses the Nullness Checker"() {
     given: "a project that applies the plugin without any configuration and can run the FailsNullnessChecker class"
     buildFile << buildFileThatRunsClass("FailsNullnessChecker")
 
@@ -74,7 +74,7 @@ final class CheckerExtensionSpec extends Specification {
     result.output.contains(JavaClassErrorOutput.FAILS_NULLNESS_CHECKER)
   }
 
-  def "Project without configuration does not use the units checker"() {
+  def "Project without configuration does not use the Units Checker"() {
     given: "a project that applies the plugin without any configuration and can run the FailsUnitsChecker class"
     buildFile << buildFileThatRunsClass("FailsUnitsChecker")
 
@@ -89,15 +89,15 @@ final class CheckerExtensionSpec extends Specification {
       .withPluginClasspath()
       .build()
 
-    then: "the build should succeed because only the nullness checker should be enabled"
+    then: "the build should succeed because only the Nullness Checker should be enabled"
     result.task(":run").outcome == TaskOutcome.SUCCESS
 
     and: "the Java class actually ran"
     result.output.contains(JavaClassSuccessOutput.FAILS_UNITS_CHECKER)
   }
 
-  def "Project configured to use the units checker fails to compile FailsUnitsChecker"() {
-    given: "a project that applies the plugin configuring the units checker and can run the FailsUnitsChecker class"
+  def "Project configured to use the Units Checker fails to compile FailsUnitsChecker"() {
+    given: "a project that applies the plugin configuring the Units Checker and can run the FailsUnitsChecker class"
     buildFile << """
       ${buildFileThatRunsClass("FailsUnitsChecker")}
 
@@ -121,8 +121,8 @@ final class CheckerExtensionSpec extends Specification {
     result.output.contains(JavaClassErrorOutput.FAILS_UNITS_CHECKER)
   }
 
-  def "Project configured to use the units checker can compile and run FailsNullnessChecker"() {
-    given: "a project that applies the plugin configuring the units checker and can run the FailsNullnessChecker class"
+  def "Project configured to use the Units Checker can compile and run FailsNullnessChecker"() {
+    given: "a project that applies the plugin configuring the Units Checker and can run the FailsNullnessChecker class"
     buildFile << """
       ${buildFileThatRunsClass("FailsNullnessChecker")}
 
@@ -142,15 +142,15 @@ final class CheckerExtensionSpec extends Specification {
       .withPluginClasspath()
       .build()
 
-    then: "the build should succeed because only the units checker should be enabled"
+    then: "the build should succeed because only the Units Checker should be enabled"
     result.task(":run").outcome == TaskOutcome.SUCCESS
 
     and: "the Java class actually ran"
     result.output.contains(JavaClassSuccessOutput.FAILS_NULLNESS_CHECKER)
   }
 
-  def "Project configured to use both units and nullness checkers rejects both kinds of errors"() {
-    given: "a project that applies the plugin configuring both nullness and units checker"
+  def "Project configured to use both Units Checker and Nullness Checker rejects both kinds of errors"() {
+    given: "a project that applies the plugin configuring both nullness and Units Checker"
     buildFile << """
       ${buildFileThatRunsClass("FailsNullnessChecker")}
 
@@ -177,7 +177,7 @@ final class CheckerExtensionSpec extends Specification {
       result.output.contains(JavaClassErrorOutput.FAILS_NULLNESS_CHECKER)
   }
 
-  def "Project configured to use no checkers compiles source that would fail nullness and units checkers"() {
+  def "Project configured to use no checkers compiles source that would fail Nullness Checker and Units Checker"() {
     given: "a project that applies the plugin configuring no checkers"
     buildFile << """
       ${buildFileThatRunsClass("FailsNullnessChecker")}
