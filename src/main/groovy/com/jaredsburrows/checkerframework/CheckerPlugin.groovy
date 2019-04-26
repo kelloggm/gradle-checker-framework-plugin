@@ -49,16 +49,15 @@ final class CheckerPlugin implements Plugin<Project> {
         project.extensions.findByName('android')?.compileOptions?.sourceCompatibility ?:
         project.property('sourceCompatibility')
 
-    // Check Java version: reject Java 7 because we can't load the typetools compiler without breaking some
-    // Java 8 projects.
+    // Check Java version.
     def jdkVersion
-    if (javaVersion.java8) {
+    if (javaVersion.java7) {
+      throw new IllegalStateException("The Checker Framework does not support Java 7.")
+    } else if (javaVersion.java8) {
       jdkVersion = ANNOTATED_JDK_NAME_JDK8
-    } else if (javaVersion.java7) {
-      throw new IllegalStateException("The Checker Framework no longer supports Java 7 JDKs. You can use an older" +
-        "version of the framework (and of the Gradle plugin), but we recommend upgrading to a Java 8 JDK.")
-    }  else {
-      // assume jdk8 until newer JDKs are released
+    } else {
+      // Use Java 8, even if the user requested a newer version of Java.
+      // Undo this hack when newer annotated JDKs are released by the Checker Framework team.
       jdkVersion = ANNOTATED_JDK_NAME_JDK8
     }
 
