@@ -72,22 +72,20 @@ apply plugin: 'com.jaredsburrows.checkerframework'
 
 ### Configuring which checkers to use
 
-It is possible to configure the checkers you want to enable using the `checkerFramework.checkers` property.
+The `checkerFramework.checkers` property lists which checkers will be run.
 
 For example:
 
 ```groovy
 checkerFramework {
   checkers = [
-    'org.checkerframework.checker.units.UnitsChecker',
-    'org.checkerframework.checker.nullness.NullnessChecker'
+    'org.checkerframework.checker.nullness.NullnessChecker',
+    'org.checkerframework.checker.units.UnitsChecker'
   ]
 }
 ```
 
-By default, only the `NullnessChecker` is enabled.
-
-You can find out what checkers are available in the [Checker Framework Manual](https://checkerframework.org/manual/#introduction).
+For a list of checkers, see the [Checker Framework Manual](https://checkerframework.org/manual/#introduction).
 
 ### Providing checker-specific options to the compiler
 
