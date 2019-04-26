@@ -55,9 +55,15 @@ final class CheckerExtensionSpec extends Specification {
     buildFile = testProjectDir.newFile("build.gradle")
   }
 
-  def "Project without configuration uses the Nullness Checker"() {
+  def "Project configured to use the Nullness Checker"() {
     given: "a project that applies the plugin without any configuration and can run the FailsNullnessChecker class"
-    buildFile << buildFileThatRunsClass("FailsNullnessChecker")
+    buildFile << """
+      ${buildFileThatRunsClass("FailsNullnessChecker")}
+
+      checkerFramework {
+        checkers = ["org.checkerframework.checker.nullness.NullnessChecker"]
+      }
+    """.stripIndent()
 
     and: "The source code contains a class that fails the NullnessChecker"
     def javaSrcDir = testProjectDir.newFolder("src", "main", "java")
@@ -74,11 +80,17 @@ final class CheckerExtensionSpec extends Specification {
     result.output.contains(JavaClassErrorOutput.FAILS_NULLNESS_CHECKER)
   }
 
-  def "Project without configuration does not use the Units Checker"() {
+  def "Project configured to use the Nullness Checker does not use the Units Checker"() {
     given: "a project that applies the plugin without any configuration and can run the FailsUnitsChecker class"
-    buildFile << buildFileThatRunsClass("FailsUnitsChecker")
+    buildFile << """
+      ${buildFileThatRunsClass("FailsUnitsChecker")}
 
-    and: "The source code contains a class that fails the UnitsChecker"
+      checkerFramework {
+        checkers = ["org.checkerframework.checker.nullness.NullnessChecker"]
+      }
+    """.stripIndent()
+
+    and: "The source code contains a class that fails the Units Checker"
     def javaSrcDir = testProjectDir.newFolder("src", "main", "java")
     new File(javaSrcDir, "FailsUnitsChecker.java") << JavaCode.FAILS_UNITS_CHECKER
 
@@ -199,7 +211,7 @@ final class CheckerExtensionSpec extends Specification {
       .withPluginClasspath()
       .build()
 
-    then: "the build should succeed because no checkers should be enabled"
+    then: "the build should succeed because the Nullness Checker should be enabled"
     result.task(":run").outcome == TaskOutcome.SUCCESS
 
     and: "the Java class actually ran"
