@@ -1,7 +1,9 @@
 package com.jaredsburrows.checkerframework
 
 class CheckerExtension {
-  List<String> checkers = ["org.checkerframework.checker.nullness.NullnessChecker"]
+  // Which checkers will be run.  Each element is a fully-qualified class name,
+  // such as "org.checkerframework.checker.nullness.NullnessChecker".
+  List<String> checkers = []
 
   // A list of extra options to pass directly to javac when running typecheckers
   List<String> extraJavacArgs = []
